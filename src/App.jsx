@@ -1,3 +1,5 @@
+import Checkout from './pages/Checkout';
+import OrderConfirmation from './pages/OrderConfirmation';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -16,6 +18,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
       </Routes>
     </>
   );
