@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getAllProducts } from '../services/productService';
 
 function Home() {
@@ -25,17 +26,24 @@ function Home() {
         gap: '20px'
       }}>
         {products.map((product) => (
-          <div key={product.id} style={{
-            border: '1px solid #ddd',
-            borderRadius: '8px',
-            padding: '15px'
-          }}>
-            <h3>{product.name}</h3>
-            <p>{product.description}</p>
-            <p><strong>₹{product.price}</strong></p>
-            <p>Stock: {product.stockQuantity}</p>
-            <p style={{ fontSize: '0.9em', color: '#666' }}>{product.category?.name}</p>
-          </div>
+          <Link
+            key={product.id}
+            to={`/products/${product.id}`}
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
+            <div style={{
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              padding: '15px',
+              cursor: 'pointer'
+            }}>
+              <h3>{product.name}</h3>
+              <p>{product.description}</p>
+              <p><strong>₹{product.price}</strong></p>
+              <p>Stock: {product.stockQuantity}</p>
+              <p style={{ fontSize: '0.9em', color: '#666' }}>{product.category?.name}</p>
+            </div>
+          </Link>
         ))}
       </div>
     </div>
