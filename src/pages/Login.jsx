@@ -21,35 +21,43 @@ function Login() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
+    <div className="container py-5">
+      <div className="row justify-content-center">
+        <div className="col-12 col-md-6 col-lg-4">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body p-4">
+              <h3 className="text-center mb-4">Login</h3>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                {error && <div className="alert alert-danger py-2">{error}</div>}
+                <button type="submit" className="btn btn-primary w-100">Login</button>
+              </form>
+              <p className="text-center mt-3 mb-0">
+                Don't have an account? <Link to="/register">Register here</Link>
+              </p>
+            </div>
+          </div>
         </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" style={{ width: '100%', padding: '10px' }}>
-          Login
-        </button>
-      </form>
-      <p>Don't have an account? <Link to="/register">Register here</Link></p>
+      </div>
     </div>
   );
 }

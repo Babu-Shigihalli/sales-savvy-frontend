@@ -6,6 +6,9 @@ function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('All');
+  const [sort, setSort] = useState('default');
 
   useEffect(() => {
     getAllProducts()
@@ -14,39 +17,107 @@ function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p style={{ padding: '20px' }}>Loading products...</p>;
-  if (error) return <p style={{ padding: '20px', color: 'red' }}>{error}</p>;
+  const categories = ['All', ...new Set(products.map((p) => p.category?.name).filter(Boolean))];
+
+  let visible = products.filter((p) => {
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = category === 'All' || p.category?.name === category;
+    return matchesSearch && matchesCategory;
+  });
+
+  if (sort === 'low') visible = [...visible].sort((a, b) => a.price - b.price);
+  if (sort === 'high') visible = [...visible].sort((a, b) => b.price - a.price);
+
+  if (loading) {
+    return (
+      <div className="container py-5 text-center">
+        <div className="spinner-border text-primary" role="status" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="container py-4"><div className="alert alert-danger">{error}</div></div>;
+  }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Products</h2>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-        gap: '20px'
-      }}>
-        {products.map((product) => (
-          <Link
-            key={product.id}
-            to={`/products/${product.id}`}
-            style={{ textDecoration: 'none', color: 'inherit' }}
-          >
-            <div style={{
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              padding: '15px',
-              cursor: 'pointer'
-            }}>
-              <h3>{product.name}</h3>
-              <p>{product.description}</p>
-              <p><strong>₹{product.price}</strong></p>
-              <p>Stock: {product.stockQuantity}</p>
-              <p style={{ fontSize: '0.9em', color: '#666' }}>{product.category?.name}</p>
-            </div>
-          </Link>
-        ))}
+    <>
+      <section className="hero text-white text-center py-5">
+        <div className="container py-4">
+          <h1 className="display-5 fw-bold">Shop smart with Sales Savvy</h1>
+          <p className="lead mb-4">Electronics, fashion, books and more, delivered to your door.</p>
+          <a href="#products" className="btn btn-light btn-lg">Shop now</a>
+        </div>
+      </section>
+
+      <div className="container py-4" id="products">
+        <div className="row g-3 align-items-center mb-3">
+          <div className="col-12 col-md-6">
+            <input
+              className="form-control"
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="col-12 col-md-3 ms-md-auto">
+            <select className="form-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="default">Sort by</option>
+              <option value="low">Price: low to high</option>
+              <option value="high">Price: high to low</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="d-flex flex-wrap gap-2 mb-4">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`btn btn-sm rounded-pill ${category === c ? 'btn-primary' : 'btn-outline-primary'}`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+
+        {visible.length === 0 ? (
+          <div className="alert alert-info">No products match your search.</div>
+        ) : (
+          <div className="row g-4">
+            {visible.map((p) => (
+              <div className="col-12 col-sm-6 col-lg-3" key={p.id}>
+                <Link to={`/products/${p.id}`} className="text-dark">
+                  <div className="card h-100 border-0 shadow-sm product-card">
+                    <div
+                      className="d-flex align-items-center justify-content-center bg-light text-secondary fs-1 fw-bold overflow-hidden"
+                      style={{ height: 180 }}
+                    >
+                      {p.imageUrl ? (
+                        <img src={p.imageUrl} alt={p.name} className="w-100 h-100 object-fit-cover" />
+                      ) : (
+                        p.name.charAt(0)
+                      )}
+                    </div>
+                    <div className="card-body">
+                      <span className="badge text-bg-secondary mb-2">{p.category?.name}</span>
+                      <h5 className="card-title">{p.name}</h5>
+                      <p className="card-text text-muted small">{p.description}</p>
+                    </div>
+                    <div className="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
+                      <span className="fs-5 fw-bold">₹{Number(p.price).toLocaleString('en-IN')}</span>
+                      <small className={p.stockQuantity > 0 ? 'text-success' : 'text-danger'}>
+                        {p.stockQuantity > 0 ? 'In stock' : 'Out of stock'}
+                      </small>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }
 
