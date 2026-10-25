@@ -1,14 +1,39 @@
+:root {
+  --bs-primary: #e4572e;
+  --bs-primary-rgb: 228, 87, 46;
+}
+
 body {
   margin: 0;
-  background: #f6f7fb;
+  background: #f1f3f6;
 }
 
 a {
   text-decoration: none;
 }
 
+.btn-primary {
+  --bs-btn-bg: #e4572e;
+  --bs-btn-border-color: #e4572e;
+  --bs-btn-hover-bg: #c9461f;
+  --bs-btn-hover-border-color: #c9461f;
+  --bs-btn-active-bg: #b53d1a;
+  --bs-btn-active-border-color: #b53d1a;
+  --bs-btn-disabled-bg: #e4572e;
+  --bs-btn-disabled-border-color: #e4572e;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #e4572e;
+  --bs-btn-border-color: #e4572e;
+  --bs-btn-hover-bg: #e4572e;
+  --bs-btn-hover-border-color: #e4572e;
+  --bs-btn-active-bg: #e4572e;
+  --bs-btn-active-border-color: #e4572e;
+}
+
 .hero {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #1f2a44, #e4572e);
 }
 
 .product-card {

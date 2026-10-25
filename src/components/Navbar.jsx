@@ -1,9 +1,25 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAllCategories } from '../services/categoryService';
 
 function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [term, setTerm] = useState(searchParams.get('q') || '');
+  const [categories, setCategories] = useState([]);
+  const activeCategory = searchParams.get('category');
+
+  useEffect(() => {
+    getAllCategories().then(setCategories).catch(() => {});
+  }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const q = term.trim();
+    navigate(q ? `/?q=${encodeURIComponent(q)}` : '/');
+  };
 
   const handleLogout = () => {
     logout();
@@ -11,39 +27,62 @@ function Navbar() {
   };
 
   return (
-    <nav style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '15px 30px',
-      backgroundColor: '#282c34',
-      color: 'white'
-    }}>
-      <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.3em', fontWeight: 'bold' }}>
-        Sales Savvy
-      </Link>
+    <header className="shadow-sm">
+      <nav className="navbar navbar-dark bg-dark">
+        <div className="container d-flex flex-wrap align-items-center gap-3">
+          <Link to="/" className="navbar-brand fw-bold mb-0">🛍️ Sales Savvy</Link>
 
-      <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-        <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Products</Link>
+          <form onSubmit={handleSearch} className="flex-grow-1 d-flex" style={{ maxWidth: 600 }}>
+            <input
+              className="form-control rounded-end-0"
+              placeholder="Search for products"
+              value={term}
+              onChange={(e) => setTerm(e.target.value)}
+            />
+            <button type="submit" className="btn btn-primary rounded-start-0">Search</button>
+          </form>
 
-        {user ? (
-          <>
-            <Link to="/cart" style={{ color: 'white', textDecoration: 'none' }}>Cart</Link>
-            <Link to="/orders" style={{ color: 'white', textDecoration: 'none' }}>My Orders</Link>
-            {user.role === 'ADMIN' && (
-              <Link to="/admin" style={{ color: 'white', textDecoration: 'none' }}>Admin</Link>
+          <div className="d-flex flex-wrap align-items-center gap-3 ms-auto">
+            {user ? (
+              <>
+                <Link to="/cart" className="text-light">Cart</Link>
+                <Link to="/orders" className="text-light">My Orders</Link>
+                {user.role === 'ADMIN' && (
+                  <Link to="/admin" className="text-warning">Admin</Link>
+                )}
+                <span className="badge text-bg-secondary">{user.email}</span>
+                <button onClick={handleLogout} className="btn btn-outline-light btn-sm">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-light">Login</Link>
+                <Link to="/register" className="btn btn-primary btn-sm">Register</Link>
+              </>
             )}
-            <span>Hi, {user.email}</span>
-            <button onClick={handleLogout} style={{ padding: '6px 12px' }}>Logout</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" style={{ color: 'white', textDecoration: 'none' }}>Login</Link>
-            <Link to="/register" style={{ color: 'white', textDecoration: 'none' }}>Register</Link>
-          </>
-        )}
+          </div>
+        </div>
+      </nav>
+
+      <div className="bg-white border-bottom">
+        <div className="container d-flex gap-4 overflow-auto py-2">
+          <Link
+            to="/"
+            className={`text-nowrap small fw-semibold ${!activeCategory ? 'text-primary' : 'text-dark'}`}
+          >
+            All
+          </Link>
+          {categories.map((c) => (
+            <Link
+              key={c.id}
+              to={`/?category=${encodeURIComponent(c.name)}`}
+              className={`text-nowrap small fw-semibold ${activeCategory === c.name ? 'text-primary' : 'text-dark'}`}
+            >
+              {c.name}
+            </Link>
+          ))}
+        </div>
       </div>
-    </nav>
+    </header>
   );
 }
 

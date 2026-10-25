@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { getAllProducts, createProduct, updateProduct, deleteProduct } from '../services/productService';
 import { getAllCategories } from '../services/categoryService';
+import ImageUpload from '../components/ImageUpload';
+
+const emptyForm = { name: '', description: '', price: '', stockQuantity: '', imageUrl: '', categoryId: '' };
 
 function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
-
-  const emptyForm = { name: '', description: '', price: '', stockQuantity: '', categoryId: '' };
   const [form, setForm] = useState(emptyForm);
 
   const loadData = () => {
@@ -20,15 +21,14 @@ function AdminProducts() {
     loadData();
   }, []);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const buildPayload = () => ({
     name: form.name,
     description: form.description,
     price: parseFloat(form.price),
     stockQuantity: parseInt(form.stockQuantity),
+    imageUrl: form.imageUrl || null,
     category: { id: parseInt(form.categoryId) },
   });
 
@@ -49,24 +49,26 @@ function AdminProducts() {
     }
   };
 
-  const handleEdit = (product) => {
-    setEditingId(product.id);
+  const handleEdit = (p) => {
+    setEditingId(p.id);
     setForm({
-      name: product.name,
-      description: product.description || '',
-      price: product.price,
-      stockQuantity: product.stockQuantity,
-      categoryId: product.category?.id || '',
+      name: p.name,
+      description: p.description || '',
+      price: p.price,
+      stockQuantity: p.stockQuantity,
+      imageUrl: p.imageUrl || '',
+      categoryId: p.category?.id || '',
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleCancelEdit = () => {
+  const handleCancel = () => {
     setEditingId(null);
     setForm(emptyForm);
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this product?')) return;
+    if (!window.confirm('Delete this product?')) return;
     try {
       await deleteProduct(id);
       loadData();
@@ -76,65 +78,100 @@ function AdminProducts() {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '900px' }}>
-      <h2>Manage Products</h2>
+    <div className="container py-4">
+      <h2 className="mb-4">Manage Products</h2>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: '30px', border: '1px solid #ddd', padding: '15px', borderRadius: '8px' }}>
-        <h3>{editingId ? 'Edit Product' : 'Add New Product'}</h3>
+      <div className="card border-0 shadow-sm mb-4">
+        <div className="card-body p-4">
+          <h5 className="mb-3">{editingId ? 'Edit product' : 'Add a new product'}</h5>
+          <form onSubmit={handleSubmit}>
+            <div className="row g-3">
+              <div className="col-12 col-md-6">
+                <input name="name" className="form-control" placeholder="Product name"
+                  value={form.name} onChange={handleChange} required />
+              </div>
+              <div className="col-12 col-md-6">
+                <select name="categoryId" className="form-select"
+                  value={form.categoryId} onChange={handleChange} required>
+                  <option value="">Select category</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-12">
+                <textarea name="description" className="form-control" rows={2} placeholder="Description"
+                  value={form.description} onChange={handleChange} />
+              </div>
+              <div className="col-6 col-md-3">
+                <input name="price" type="number" step="0.01" className="form-control" placeholder="Price"
+                  value={form.price} onChange={handleChange} required />
+              </div>
+              <div className="col-6 col-md-3">
+                <input name="stockQuantity" type="number" className="form-control" placeholder="Stock"
+                  value={form.stockQuantity} onChange={handleChange} required />
+              </div>
+              <div className="col-12 col-md-6">
+                <ImageUpload
+                  value={form.imageUrl}
+                  onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))}
+                />
+              </div>
+            </div>
 
-        <div style={{ marginBottom: '10px' }}>
-          <input name="name" placeholder="Product name" value={form.name} onChange={handleChange} required style={{ width: '100%', padding: '8px' }} />
+            {error && <div className="alert alert-danger py-2 mt-3 mb-0">{error}</div>}
+
+            <div className="mt-3">
+              <button type="submit" className="btn btn-primary me-2">
+                {editingId ? 'Update product' : 'Add product'}
+              </button>
+              {editingId && (
+                <button type="button" className="btn btn-outline-secondary" onClick={handleCancel}>
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
         </div>
-        <div style={{ marginBottom: '10px' }}>
-          <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} rows={2} style={{ width: '100%', padding: '8px' }} />
-        </div>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-          <input name="price" type="number" step="0.01" placeholder="Price" value={form.price} onChange={handleChange} required style={{ flex: 1, padding: '8px' }} />
-          <input name="stockQuantity" type="number" placeholder="Stock" value={form.stockQuantity} onChange={handleChange} required style={{ flex: 1, padding: '8px' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <select name="categoryId" value={form.categoryId} onChange={handleChange} required style={{ width: '100%', padding: '8px' }}>
-            <option value="">Select category</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
+      </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-
-        <button type="submit" style={{ padding: '8px 16px', marginRight: '10px' }}>
-          {editingId ? 'Update Product' : 'Add Product'}
-        </button>
-        {editingId && (
-          <button type="button" onClick={handleCancelEdit} style={{ padding: '8px 16px' }}>
-            Cancel
-          </button>
-        )}
-      </form>
-
-      <h3>Existing Products</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
-            <th>Name</th><th>Price</th><th>Stock</th><th>Category</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((p) => (
-            <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td>{p.name}</td>
-              <td>₹{p.price}</td>
-              <td>{p.stockQuantity}</td>
-              <td>{p.category?.name}</td>
-              <td>
-                <button onClick={() => handleEdit(p)} style={{ marginRight: '8px' }}>Edit</button>
-                <button onClick={() => handleDelete(p.id)} style={{ color: 'red' }}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="card border-0 shadow-sm">
+        <div className="card-body">
+          <div className="table-responsive">
+            <table className="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th></th><th>Name</th><th>Price</th><th>Stock</th><th>Category</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((p) => (
+                  <tr key={p.id}>
+                    <td style={{ width: 60 }}>
+                      {p.imageUrl ? (
+                        <img src={p.imageUrl} alt={p.name} width="48" height="48" className="rounded object-fit-cover" />
+                      ) : (
+                        <div className="bg-light rounded d-flex align-items-center justify-content-center fw-bold text-secondary"
+                          style={{ width: 48, height: 48 }}>
+                          {p.name.charAt(0)}
+                        </div>
+                      )}
+                    </td>
+                    <td className="fw-bold">{p.name}</td>
+                    <td>&#8377;{p.price}</td>
+                    <td>{p.stockQuantity}</td>
+                    <td><span className="badge text-bg-secondary">{p.category?.name}</span></td>
+                    <td className="text-end">
+                      <button className="btn btn-outline-primary btn-sm me-2" onClick={() => handleEdit(p)}>Edit</button>
+                      <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(p.id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
