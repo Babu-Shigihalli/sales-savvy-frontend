@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getMyOrders } from '../services/orderService';
+import { getMyOrders, cancelOrder } from '../services/orderService';
 import { payForOrder } from '../services/paymentService';
 import { useAuth } from '../context/AuthContext';
 
@@ -49,6 +49,19 @@ function MyOrders() {
       setActionError(err.response?.data?.error || 'The payment could not be started.');
     } finally {
       setPayingId(null);
+    }
+  };
+
+  const handleCancel = async (orderId) => {
+    if (!window.confirm(`Cancel order #${orderId}?`)) return;
+    setNotice('');
+    setActionError('');
+    try {
+      await cancelOrder(orderId);
+      setNotice(`Order #${orderId} was cancelled.`);
+      loadOrders();
+    } catch (err) {
+      setActionError(err.response?.data?.error || 'The order could not be cancelled.');
     }
   };
 
@@ -104,13 +117,22 @@ function MyOrders() {
 
               <div className="d-flex justify-content-between align-items-center">
                 {order.status === 'PENDING' ? (
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handlePay(order.id)}
-                    disabled={payingId === order.id}
-                  >
-                    {payingId === order.id ? 'Opening payment...' : 'Pay now'}
-                  </button>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handlePay(order.id)}
+                      disabled={payingId === order.id}
+                    >
+                      {payingId === order.id ? 'Opening payment...' : 'Pay now'}
+                    </button>
+                    <button
+                      className="btn btn-outline-danger"
+                      onClick={() => handleCancel(order.id)}
+                      disabled={payingId === order.id}
+                    >
+                      Cancel order
+                    </button>
+                  </div>
                 ) : (
                   <span></span>
                 )}
