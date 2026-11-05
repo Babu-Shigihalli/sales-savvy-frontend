@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllProducts, createProduct, updateProduct, deleteProduct } from '../services/productService';
 import { getAllCategories } from '../services/categoryService';
+import { generateDescription } from '../services/aiService';
 import ImageUpload from '../components/ImageUpload';
 
 const emptyForm = { name: '', description: '', price: '', stockQuantity: '', imageUrl: '', categoryId: '' };
@@ -10,6 +11,7 @@ function AdminProducts() {
   const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
+  const [generating, setGenerating] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
   const loadData = () => {
@@ -46,6 +48,20 @@ function AdminProducts() {
       loadData();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save product.');
+    }
+  };
+
+  const handleGenerate = async () => {
+    setError('');
+    const category = categories.find((c) => String(c.id) === String(form.categoryId));
+    setGenerating(true);
+    try {
+      const description = await generateDescription(form.name, category ? category.name : '');
+      setForm((f) => ({ ...f, description }));
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not generate a description.');
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -102,6 +118,17 @@ function AdminProducts() {
               <div className="col-12">
                 <textarea name="description" className="form-control" rows={2} placeholder="Description"
                   value={form.description} onChange={handleChange} />
+                <div className="d-flex align-items-center gap-2 mt-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={handleGenerate}
+                    disabled={generating || !form.name.trim()}
+                  >
+                    {generating ? 'Generating...' : 'Generate with AI'}
+                  </button>
+                  <small className="text-muted">Enter a name first. Review and edit the text before saving.</small>
+                </div>
               </div>
               <div className="col-6 col-md-3">
                 <input name="price" type="number" step="0.01" className="form-control" placeholder="Price"
