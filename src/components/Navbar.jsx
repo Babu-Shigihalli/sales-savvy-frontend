@@ -9,30 +9,48 @@ function Navbar() {
   const [searchParams] = useSearchParams();
   const [term, setTerm] = useState(searchParams.get('q') || '');
   const [categories, setCategories] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
   const activeCategory = searchParams.get('category');
 
   useEffect(() => {
     getAllCategories().then(setCategories).catch(() => {});
   }, []);
 
+  const closeMenu = () => setMenuOpen(false);
+
   const handleSearch = (e) => {
     e.preventDefault();
     const q = term.trim();
+    closeMenu();
     navigate(q ? `/?q=${encodeURIComponent(q)}` : '/');
   };
 
   const handleLogout = () => {
+    closeMenu();
     logout();
     navigate('/login');
   };
 
   return (
     <header className="shadow-sm">
-      <nav className="navbar navbar-dark bg-dark">
-        <div className="container d-flex flex-wrap align-items-center gap-3">
-          <Link to="/" className="navbar-brand fw-bold mb-0">🛍️ Sales Savvy</Link>
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div className="container">
+          <Link to="/" className="navbar-brand d-flex align-items-center gap-2 fw-bold" onClick={closeMenu}>
+            <img src="/logo-icon.svg" alt="" width="30" height="30" />
+            Sales Savvy
+          </Link>
 
-          <form onSubmit={handleSearch} className="flex-grow-1 d-flex" style={{ maxWidth: 600 }}>
+          <button
+            className="navbar-toggler"
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+
+          <form onSubmit={handleSearch} className="nav-search d-flex mt-2 mt-lg-0">
             <input
               className="form-control rounded-end-0"
               placeholder="Search for products"
@@ -42,23 +60,34 @@ function Navbar() {
             <button type="submit" className="btn btn-primary rounded-start-0">Search</button>
           </form>
 
-          <div className="d-flex flex-wrap align-items-center gap-3 ms-auto">
-            {user ? (
-              <>
-                <Link to="/cart" className="text-light">Cart</Link>
-                <Link to="/orders" className="text-light">My Orders</Link>
-                {user.role === 'ADMIN' && (
-                  <Link to="/admin" className="text-warning">Admin</Link>
-                )}
-                <span className="badge text-bg-secondary">{user.email}</span>
-                <button onClick={handleLogout} className="btn btn-outline-light btn-sm">Logout</button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="text-light">Login</Link>
-                <Link to="/register" className="btn btn-primary btn-sm">Register</Link>
-              </>
-            )}
+          <div className={`collapse navbar-collapse ${menuOpen ? 'show' : ''}`}>
+            <div className="d-flex flex-column flex-lg-row align-items-lg-center gap-2 gap-lg-3 ms-lg-auto py-2 py-lg-0">
+              {user ? (
+                <>
+                  <Link to="/cart" className="text-light" onClick={closeMenu}>Cart</Link>
+                  <Link to="/orders" className="text-light" onClick={closeMenu}>My Orders</Link>
+                  {user.role === 'ADMIN' && (
+                    <Link to="/admin" className="text-warning" onClick={closeMenu}>Admin</Link>
+                  )}
+                  <span
+                    className="badge text-bg-secondary text-truncate align-self-start"
+                    style={{ maxWidth: 220 }}
+                  >
+                    {user.email}
+                  </span>
+                  <button onClick={handleLogout} className="btn btn-outline-light btn-sm align-self-start">
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="text-light" onClick={closeMenu}>Login</Link>
+                  <Link to="/register" className="btn btn-primary btn-sm align-self-start" onClick={closeMenu}>
+                    Register
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </nav>

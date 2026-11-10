@@ -44,3 +44,51 @@ a {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
 }
+
+/* Navbar search: full width on phones, centered on large screens */
+.nav-search {
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .nav-search {
+    width: auto;
+    flex: 1;
+    max-width: 600px;
+    margin: 0 1.5rem;
+  }
+}
+
+/* Let rows wrap instead of overflowing on narrow screens */
+.product-card .card-footer {
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.card-body .d-flex.justify-content-between.align-items-center {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (max-width: 575.98px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .card-body {
+    padding: 1rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero .lead {
+    font-size: 1rem;
+  }
+}
